@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>GTM Auto-Event Listener Debugger popup</title>
+        <meta charset="utf-8">
+        <style>
+            body {
+                min-width: 357px;
+                overflow-x: hidden;
+                font-family: "Trebuchet MS", Helvetica, sans-serif;
+                background: url("icon48.png") no-repeat right top;
+            }
+            #heading {
+                font-weight: bold;
+            }
+            #state {
+                border-bottom: 2px solid #cccccc;
+                font-size: 1em;
+            }
+            #info {
+                border-top: 1px solid #777777;
+            }
+            #status {
+                color: #f00;
+            }
+            #content {
+                font-size: 0.9em;
+            }
+            button {
+                color: #fff;
+                background-color: #006363;
+                border: 1px solid #000;
+                padding: 5px;
+            }
+            button:focus, input:focus {
+                outline: 0;
+            }
+            button:disabled {
+                background-color: #dddddd;
+            }
+            .win .mac, .mac .win {
+              display: none;
+            }
+            .error {
+                padding-top: 10px; font-style:italic;font-size: 0.75em; 
+            }
+        </style>
+        <script type="text/javascript" src="popup.js"></script>
+    </head>
+    <body>
+        <div id="state">
+            <span id="heading">GTM Sonar</span>
+            <div id="content">
+                <p>
+                    Status: <span id="status">Disabled</span>
+                </p>
+                <p>
+                    <input type="radio" name="listeners" checked id="click">Click Listener</input><br/>
+                    <input type="radio" name="listeners" id="linkclick">Link Click Listener</input><br/>
+                    <input type="radio" name="listeners" id="formsubmit">Form Submit Listener</input>
+                </p>
+                <p>
+                    <button id="trigger"></button>
+                    <button id="jQuery" disabled></button>
+                </p>
+                <div id="info">
+                    <p>
+                        <ol>
+                            <li>Press <span class="mac">&#x2325;+&#x2318;+J (Cmd+Opt+J)</span> <span class="win">Ctrl+Shift+J</span> to open JavaScript console.</li>
+                            <li>Type <code>debugDL</code> in the console and press Enter to view array contents</li>
+                        </ol>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
