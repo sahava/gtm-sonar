@@ -16,7 +16,7 @@ document.addEventListener("dLLength", function (e) {
 
 // Inject script which tests if jQuery exists and dispatches a custom event with information
 document.addEventListener("isJQuery", function (e) { "use strict"; isJQuery = e.detail; });
-injCode = "if(typeof(jQuery)!=='undefined'){var event=new CustomEvent('isJQuery',{detail:'yes'});document.dispatchEvent(event);};";
+injCode = "(function() { window.__sonar = window.__sonar || {}; if(typeof(window.jQuery)!=='undefined'){var event=new CustomEvent('isJQuery',{detail:'yes'});document.dispatchEvent(event);};})()";
 injElem = document.createElement('script');
 injElem.setAttribute('type', 'text/javascript');
 injElem.innerHTML = injCode;
@@ -29,20 +29,20 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     // Upon click toggle DOM injection
     if (request.message === "click") {
         if (!toggle && !document.getElementById("debugDLLoader")) {
-            injCode = "startdl=function(){window['debugDL']=window['debugDL']||[];};startdl();";
+            injCode = "window.__sonar.startdl=function(){window['debugDL']=window['debugDL']||[];};window.__sonar.startdl();";
             injElem = document.createElement('script');
             if (request.checkC) {
-                injCode += "function getClick(e){e.preventDefault();window.debugDL.push({'event': 'gtm.click', 'gtm.element': e.target, 'gtm.elementId': e.target.id, 'gtm.elementClasses': e.target.className, 'gtm.elementUrl': e.target.href, 'gtm.elementTarget': e.target.target});var event=new CustomEvent('dLLength',{detail:window.debugDL.length});document.dispatchEvent(event);}";
-                injCode += "document.addEventListener('click',getClick,true);";
+                injCode += "window.__sonar.getClick = function(e){e.preventDefault();window.debugDL.push({'event': 'gtm.click', 'gtm.element': e.target, 'gtm.elementId': e.target.id, 'gtm.elementClasses': e.target.className, 'gtm.elementUrl': e.target.href, 'gtm.elementTarget': e.target.target});var event=new CustomEvent('dLLength',{detail:window.debugDL.length});document.dispatchEvent(event);};";
+                injCode += "document.addEventListener('click',window.__sonar.getClick,true);";
                 clickStat = true;
             } else if (request.checkL) {
-                injCode += "function getLink(e){e.preventDefault(); var node = e.target; var link = false; while (node.tagName !== 'BODY') { if (node.tagName === 'A') { link = node; break; } else { node = node.parentElement; } }; if (link) { window.debugDL.push({'event': 'gtm.linkClick', 'gtm.element': link, 'gtm.elementId': link.id, 'gtm.elementClasses': link.className, 'gtm.elementUrl': link.href, 'gtm.elementTarget': link.target});};var event=new CustomEvent('dLLength',{detail:window.debugDL.length});document.dispatchEvent(event);}";
-                injCode += "document.addEventListener('click',getLink,false);";
+                injCode += "window.__sonar.getLink = function(e){e.preventDefault(); var node = e.target; var link = false; while (node.tagName !== 'BODY') { if (node.tagName === 'A') { link = node; break; } else { node = node.parentElement; } }; if (link) { window.debugDL.push({'event': 'gtm.linkClick', 'gtm.element': link, 'gtm.elementId': link.id, 'gtm.elementClasses': link.className, 'gtm.elementUrl': link.href, 'gtm.elementTarget': link.target});};var event=new CustomEvent('dLLength',{detail:window.debugDL.length});document.dispatchEvent(event);};";
+                injCode += "document.addEventListener('click',window.__sonar.getLink,false);";
                 linkStat = true;
             } else if (request.checkF) {
-                injCode += "function cSubmit(e){e.preventDefault();};var f=document.getElementsByTagName('form');for(var i=0;i<f.length;i++){f[i].addEventListener('submit',cSubmit,false);};";
-                injCode += "function getForm(e){window.debugDL.push({'event': 'gtm.formSubmit', 'gtm.element': e.target, 'gtm.elementId': e.target.id, 'gtm.elementClasses': e.target.className, 'gtm.elementUrl': e.target.action, 'gtm.elementTarget': e.target.target});var event=new CustomEvent('dLLength',{detail:window.debugDL.length});document.dispatchEvent(event);}";
-                injCode += "document.addEventListener('submit',getForm,false);";
+                injCode += "window.__sonar.cSubmit = function(e){e.preventDefault();};var f=document.getElementsByTagName('form');for(var i=0;i<f.length;i++){f[i].addEventListener('submit',window.__sonar.cSubmit,false);};";
+                injCode += "window.__sonar.getForm = function(e){window.debugDL.push({'event': 'gtm.formSubmit', 'gtm.element': e.target, 'gtm.elementId': e.target.id, 'gtm.elementClasses': e.target.className, 'gtm.elementUrl': e.target.action, 'gtm.elementTarget': e.target.target});var event=new CustomEvent('dLLength',{detail:window.debugDL.length});document.dispatchEvent(event);};";
+                injCode += "document.addEventListener('submit',window.__sonar.getForm,false);";
                 formStat = true;
             }
             injElem.setAttribute('type', 'text/javascript');
@@ -55,12 +55,12 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
             var rem1 = document.getElementById("debugDLLoader"),
                 rem2 = document.getElementById("debugDLUnloader");
             if (clickStat) {
-                injCode += "document.removeEventListener('click',getClick,true);";
+                injCode += "document.removeEventListener('click',window.__sonar.getClick,true);";
             } else if (linkStat) {
-                injCode += "document.removeEventListener('click',getLink,false);";
+                injCode += "document.removeEventListener('click',window.__sonar.getLink,false);";
             } else if (formStat) {
-                injCode += "var f=document.getElementsByTagName('form');for(var i=0;i<f.length;i++){f[i].removeEventListener('submit',cSubmit,false);};";
-                injCode += "document.removeEventListener('submit',getForm,false);";
+                injCode += "(function() { var f=document.getElementsByTagName('form');for(var i=0;i<f.length;i++){f[i].removeEventListener('submit',cSubmit,false);} })()";
+                injCode += "document.removeEventListener('submit',window.__sonar.getForm,false);";
             }
             injElem.setAttribute('type', 'text/javascript');
             injElem.innerHTML = injCode;
@@ -81,7 +81,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         sendResponse({status : toggle, jStatus : isJQuery, cStatus : clickStat, lStatus : linkStat, fStatus : formStat});
     // Remove jQuery event handlers
     } else if (request.message === "killjquery") {
-        injCode = "if(jQuery) { jQuery('body').find('*').off(); }";
+        injCode = "if(window.jQuery) { jQuery('body').find('*').off(); }";
         injElem = document.createElement('script');
         injElem.setAttribute('type', 'text/javascript');
         injElem.innerHTML = injCode;
